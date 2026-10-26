@@ -1631,6 +1631,7 @@ impl DocView {
                     tag: THUMB_TAG | u64::from(scale.to_bits()),
                     // Thumbnails are previews: tiny images are skipped for them.
                     preview: true,
+                    invert_colors: false,
                 })
             })
             .collect()
@@ -2041,7 +2042,15 @@ impl DocView {
             let tag = scale_tag(scale) | PRINT_TAG | if self.grayscale { GRAYSCALE_TAG } else { 0 };
             let fresh = self.print_pages.get(&page).is_some_and(|(have, _)| *have == tag);
             if !fresh {
-                self.frame_queue.push(RenderRequest { page, kind: RequestKind::Pixels, tile: None, scale, tag, preview: false });
+                self.frame_queue.push(RenderRequest {
+                    page,
+                    kind: RequestKind::Pixels,
+                    tile: None,
+                    scale,
+                    tag,
+                    preview: false,
+                    invert_colors: false,
+                });
             }
         }
     }
@@ -3826,6 +3835,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
             // It is the whole-page request whose scale is not the current one; sharp tiles
             // and whole-page finals always draw everything.
             preview: tile.is_none() && (wanted_scale != scale || wanted_tag != tag),
+            invert_colors: false,
         })
         .collect();
     // While the zoom or pan is settling, hold back sharp re-renders of pages that already
@@ -3874,6 +3884,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
         scale: 1.0,
         tag: TEXT_TAG,
         preview: false,
+        invert_colors: false,
     }));
     view.frame_queue = queue;
     view.frame_visible = visible_now.iter().copied().collect();
@@ -5062,6 +5073,7 @@ fn organize_grid(view: &mut DocView, info: &DocInfo, editable: bool, dirty: bool
                             tag: GRID_TAG,
                             // Grid cells are previews: tiny images are skipped for them.
                             preview: true,
+                            invert_colors: false,
                         });
                     }
                 }
@@ -5511,7 +5523,8 @@ endstream endobj
 trailer << /Root 1 0 R >>
 %%EOF";
         let mut r = pdfcraft_render::PageRenderer::new(Arc::new(pdf.to_vec()), Default::default());
-        let out = r.render(RenderRequest { page: 0, kind: RequestKind::Pixels, tile: None, scale: 1.5, tag: 0, preview: false });
+        let out =
+            r.render(RenderRequest { page: 0, kind: RequestKind::Pixels, tile: None, scale: 1.5, tag: 0, preview: false, invert_colors: false });
         assert!(out.error.is_none(), "{:?}", out.error);
         let size = [out.width as usize, out.height as usize];
         let copied = egui::ColorImage::from_rgba_premultiplied(size, &out.rgba);

@@ -1085,9 +1085,7 @@ impl PdfCraftApp {
         }
     }
     fn color_inversion_shortcut(&mut self, ctx: &egui::Context) {
-        let invert_pressed = ctx.input(|input| {
-            input.modifiers.ctrl && input.key_pressed(egui::Key::I)
-        });
+        let invert_pressed = ctx.input(|input| input.modifiers.ctrl && input.key_pressed(egui::Key::I));
         if invert_pressed {
             self.invert_colors = !self.invert_colors;
         }

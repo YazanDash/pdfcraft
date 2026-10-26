@@ -105,6 +105,7 @@ fn scenario_requests(scenario: &str, width: f32, height: f32) -> Result<Vec<Rend
         scale,
         tag: scale_tag(scale),
         preview,
+        invert_colors: false,
     };
     let tiles = |scale: f32| -> Vec<RenderRequest> {
         [(0, 0), (TILE, 0), (0, TILE), (TILE, TILE)].into_iter().map(|(x, y)| page(scale, Some(Tile { x, y, w: TILE, h: TILE }), false)).collect()

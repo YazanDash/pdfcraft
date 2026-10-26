@@ -394,7 +394,7 @@ fn text(args: &[String]) -> Result<(), CliError> {
     };
     let mut failed: Vec<usize> = Vec::new();
     for (n, p) in pages.iter().enumerate() {
-        let out = r.render(RenderRequest { page: *p, kind: RequestKind::Text, tile: None, scale: 1.0, tag: 0, preview: false });
+        let out = r.render(RenderRequest { page: *p, kind: RequestKind::Text, tile: None, scale: 1.0, tag: 0, preview: false, invert_colors: false });
         if let Some(e) = out.error {
             let _ = writeln!(std::io::stderr().lock(), "page {}: {e}", p + 1);
             failed.push(p + 1);
@@ -617,7 +617,16 @@ fn render(args: &[String]) -> Result<(), CliError> {
         pdfcraft_engine::display_bytes_for(bytes, password)
     };
     let mut r = PageRenderer::new(display, RenderConfig { password: password.map(Arc::from), reject_oversize: true, ..Default::default() });
-    let p = r.render(RenderRequest { page: page_index, kind: RequestKind::Pixels, tile: None, scale: dpi / 72.0, tag: 0, preview: false });
+    let p = r.render(RenderRequest {
+        page: page_index,
+        kind: RequestKind::Pixels,
+        tile: None,
+        scale: dpi / 72.0,
+        tag: 0,
+        preview: false,
+        invert_colors: false,
+
+    });
     if let Some(e) = p.error {
         return Err(e.into());
     }
@@ -656,8 +665,19 @@ fn check_one(args: &[String]) -> Result<(), CliError> {
             let mut r = PageRenderer::new(bytes, RenderConfig::default());
             let mut failed = Vec::new();
             for i in 0..info.pages.len().min(500) {
-                let p = r.render(RenderRequest { page: i, kind: RequestKind::Pixels, tile: None, scale: dpi / 72.0, tag: 0, preview: false });
-                if let Some(e) = r.render(RenderRequest { page: i, kind: RequestKind::Text, tile: None, scale: 1.0, tag: 0, preview: false }).error {
+                let p = r.render(RenderRequest {
+                    page: i,
+                    kind: RequestKind::Pixels,
+                    tile: None,
+                    scale: dpi / 72.0,
+                    tag: 0,
+                    preview: false,
+                    invert_colors: false,
+                });
+                if let Some(e) = r
+                    .render(RenderRequest { page: i, kind: RequestKind::Text, tile: None, scale: 1.0, tag: 0, preview: false, invert_colors: false })
+                    .error
+                {
                     failed.push(format!("p{} text: {e}", i + 1));
                 }
                 if let Some(e) = p.error {

@@ -20,18 +20,26 @@ struct Key {
     scale: u32,
     tag: u64,
     preview: bool,
-    invert_colors: bool
+    invert_colors: bool,
 }
 
 impl From<RenderRequest> for Key {
     fn from(r: RenderRequest) -> Self {
-        Self { page: r.page, kind: r.kind, tile: r.tile, scale: r.scale.to_bits(), tag: r.tag, preview: r.preview, invert_colors: r.invert_colors}
+        Self { page: r.page, kind: r.kind, tile: r.tile, scale: r.scale.to_bits(), tag: r.tag, preview: r.preview, invert_colors: r.invert_colors }
     }
 }
 
 impl Key {
     fn request(self) -> RenderRequest {
-        RenderRequest { page: self.page, kind: self.kind, tile: self.tile, scale: f32::from_bits(self.scale), tag: self.tag, preview: self.preview, invert_colors: self.invert_colors}
+        RenderRequest {
+            page: self.page,
+            kind: self.kind,
+            tile: self.tile,
+            scale: f32::from_bits(self.scale),
+            tag: self.tag,
+            preview: self.preview,
+            invert_colors: self.invert_colors,
+        }
     }
 }
 
