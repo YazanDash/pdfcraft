@@ -29,6 +29,15 @@ impl Pixels {
     pub(crate) fn byte_capacity(&self) -> usize {
         self.0.capacity().saturating_mul(4)
     }
+    pub fn invert(&mut self) {
+        for pixel in self.bytes_mut().chunks_exact_mut(4) {
+            let a = pixel[3];
+            pixel[0] = a.saturating_sub(pixel[0]); // Red
+            pixel[1] = a.saturating_sub(pixel[1]); // Green
+            pixel[2] = a.saturating_sub(pixel[2]); // Blue
+            // Alpha (pixel[3]) remains unchanged
+        }
+    }
 }
 
 /// Pixels from words, one per pixel, its bytes in R, G, B, A memory order.

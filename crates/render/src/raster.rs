@@ -65,6 +65,7 @@ pub struct RenderConfig {
     /// View ▸ Reading colours: solid text and line-art paints are remapped for readability and
     /// the page clears to the setting's background. Display only; the document never changes.
     pub reading_colors: ReadingColors,
+    pub invert_colors: bool,
 }
 
 impl RenderConfig {
@@ -164,6 +165,7 @@ pub struct RenderRequest {
     /// few device pixels are skipped. Never set it for a final render (tiles, whole pages,
     /// print, export): previews may differ by those pixels.
     pub preview: bool,
+    pub invert_colors: bool,
 }
 
 /// The tag bit of a print-preview raster. Such requests always render the document's true
@@ -175,6 +177,9 @@ pub const PRINT_TAG: u64 = 1 << 60;
 /// document's setting and render with reading colours off.
 fn request_reading(config: &RenderConfig, req: &RenderRequest) -> ReadingColors {
     if req.tag & PRINT_TAG != 0 { ReadingColors::default() } else { config.reading_colors }
+}
+fn request_invert(config: &RenderConfig, req: &RenderRequest) -> bool {
+    config.invert_colors && req.tag & PRINT_TAG == 0
 }
 
 /// What a render that panicked or overran the watchdog is remembered by: its page and kind. Not
@@ -370,6 +375,9 @@ fn render_page<'a>(
         let mut preview_settings = settings.clone();
         preview_settings.preview = req.preview;
         render_into(page, cache, &preview_settings, &rs, pixels.bytes_mut());
+        if req.invert_colors {
+             pixels.invert();
+        }
         Ok((w.into(), h.into(), pixels, None))
     }));
     match result {

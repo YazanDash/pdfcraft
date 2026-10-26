@@ -484,6 +484,7 @@ pub struct RecentFile {
 }
 
 pub struct PdfCraftApp {
+    pub invert_colors: bool,
     pub docking: docking::Workspace,
     pub(crate) pending_panel_reveals: Vec<docking::Panel>,
     pub session: Session,
@@ -1080,9 +1081,17 @@ impl PdfCraftApp {
             replace_draft: None,
             number_draft: NumberDraft { from: 1, to: 1, style: pdfcraft_engine::LabelStyle::Decimal, prefix: String::new(), start: 1 },
             word_count_draft: word_count_ui::Draft::default(),
+            invert_colors: false,
         }
     }
-
+    fn color_inversion_shortcut(&mut self, ctx: &egui::Context) {
+        let invert_pressed = ctx.input(|input| {
+            input.modifiers.ctrl && input.key_pressed(egui::Key::I)
+        });
+        if invert_pressed {
+            self.invert_colors = !self.invert_colors;
+        }
+    }
     /// Fields are being edited (Prepare a form is open or a field tool is picked), unless the
     /// form is being previewed.
     pub fn is_preparing(&self) -> bool {
@@ -2797,6 +2806,7 @@ impl PdfCraftApp {
 
     fn shortcuts(&mut self, ctx: &egui::Context) {
         use egui::Key;
+        self.color_inversion_shortcut(ctx);
         // "Save changes?" is modal: its keys are its own (⌘D is Don't save there, not Document
         // properties; Escape cancels it rather than clearing a selection), and nothing may run
         // underneath it. They are read here, before the canvas can consume them.
